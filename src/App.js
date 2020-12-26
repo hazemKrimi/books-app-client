@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { CircularProgress, Typography } from '@material-ui/core';
+import { CircularProgress, Typography, Snackbar, IconButton } from '@material-ui/core';
+import { Close } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import MaterialTable from 'material-table';
 
@@ -28,6 +29,8 @@ const App = () => {
 	const ref = useRef();
 
 	const [loading, setLoading] = useState(true);
+	const [snack, setSnack] = useState(false);
+	const [snackMessage, setSnackMessage] = useState('');
 	const [error, setError] = useState('');
 	const [books, setBooks] = useState([]);
 
@@ -45,38 +48,61 @@ const App = () => {
 
 		return () => {
 			setError('');
+			setSnackMessage('');
+			setSnack(false);
 			setLoading(true);
 			setBooks([]);
 		};
 	}, []);
 
 	const addBook = async book => {
-		const added = await (
-			await fetch('http://localhost:8080/books', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(book)
-			})
-		).json();
-		setBooks([{ ...added }, ...books]);
+		try {
+			const added = await (
+				await fetch('http://localhost:8080/books', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(book)
+				})
+			).json();
+			setBooks([{ ...added }, ...books]);
+			setSnackMessage('Book added successfully');
+			setSnack(true);
+		} catch {
+			setSnackMessage('Could not add book');
+			setSnack(true);
+		}
 	};
 
 	const updateBook = async book => {
-		const updated = await (
-			await fetch(`http://localhost:8080/books/${book.id}`, {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(book)
-			})
-		).json();
-		setBooks([...books.filter(book => book.id !== updated.id), { ...updated }]);
+		try {
+			const updated = await (
+				await fetch(`http://localhost:8080/books/${book.id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(book)
+				})
+			).json();
+			setBooks([...books.filter(book => book.id !== updated.id), { ...updated }]);
+			setSnackMessage('Book updated successfully');
+			setSnack(true);
+		} catch {
+			setSnackMessage('Could not update book');
+			setSnack(true);
+		}
 	};
 
 	const deleteBook = async id => {
-		await fetch(`http://localhost:8080/books/${id}`, {
-			method: 'DELETE'
-		});
-		setBooks([...books.filter(book => book.id !== id)]);
+		try {
+			await fetch(`http://localhost:8080/books/${id}`, {
+				method: 'DELETE'
+			});
+			setBooks([...books.filter(book => book.id !== id)]);
+			setSnackMessage('Book deleted successfully');
+			setSnack(true);
+		} catch {
+			setSnackMessage('Could not delete book');
+			setSnack(true);
+		}
 	};
 
 	return (
@@ -85,6 +111,28 @@ const App = () => {
 				<>
 					{books && !error ? (
 						<div className={classes.table}>
+							<Snackbar
+								anchorOrigin={{
+									vertical: 'bottom',
+									horizontal: 'left'
+								}}
+								open={snack}
+								autoHideDuration={5000}
+								onClose={() => setSnack(false)}
+								message={snackMessage}
+								action={
+									<>
+										<IconButton
+											size='small'
+											aria-label='close'
+											color='inherit'
+											onClick={() => setSnack(false)}
+										>
+											<Close fontSize='small' />
+										</IconButton>
+									</>
+								}
+							/>
 							<MaterialTable
 								title='Books'
 								columns={[
