@@ -187,6 +187,9 @@ const App = () => {
 										}
 									}
 								}}
+								localization={{
+									body: { editRow: { deleteText: 'Are you sure you want to delete this book?' } }
+								}}
 							/>
 						</div>
 					) : (
