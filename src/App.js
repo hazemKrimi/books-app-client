@@ -37,7 +37,7 @@ const App = () => {
 	useEffect(() => {
 		(async () => {
 			try {
-				const books = await (await fetch('http://localhost:8080/books')).json();
+				const books = await (await fetch(process.env.REACT_APP_SERVER)).json();
 				setBooks(books._embedded.books);
 				setLoading(false);
 			} catch (err) {
@@ -58,7 +58,7 @@ const App = () => {
 	const addBook = async book => {
 		try {
 			const added = await (
-				await fetch('http://localhost:8080/books', {
+				await fetch(process.env.REACT_APP_SERVER, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(book)
@@ -76,7 +76,7 @@ const App = () => {
 	const updateBook = async book => {
 		try {
 			const updated = await (
-				await fetch(`http://localhost:8080/books/${book.id}`, {
+				await fetch(`${process.env.REACT_APP_SERVER}/${book.id}`, {
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(book)
@@ -93,7 +93,7 @@ const App = () => {
 
 	const deleteBook = async id => {
 		try {
-			await fetch(`http://localhost:8080/books/${id}`, {
+			await fetch(`${process.env.REACT_APP_SERVER}/${id}`, {
 				method: 'DELETE'
 			});
 			setBooks([...books.filter(book => book.id !== id)]);
